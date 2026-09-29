@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sistema de Cadastros</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
   body { font-family: 'Inter', sans-serif; }
@@ -20,12 +23,17 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .slide-in { animation: slideIn 0.3s ease-out; }
   @keyframes slideIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .stat-gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  .stat-gradient-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+  .stat-gradient-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+  .stat-gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+  .footer-link { color: #667eea; text-decoration: none; font-weight: 500; }
+  .footer-link:hover { text-decoration: underline; }
   @media print {
     .no-print { display: none !important; }
     body { background: #fff; }
-    .print-only { display: block !important; }
   }
-  .print-only { display: none; }
+  .chart-container { position: relative; height: 280px; }
 </style>
 </head>
 <body class="bg-gray-50">
@@ -44,12 +52,12 @@
     </div>
     <form id="loginForm" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
         <input type="email" id="loginEmail" required placeholder="seu@email.com" 
           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"/>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
         <input type="password" id="loginSenha" required placeholder="••••••••" 
           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"/>
       </div>
@@ -69,8 +77,8 @@
 </div>
 
 <!-- MAIN APP -->
-<div id="mainApp" class="hidden">
-  <div class="flex h-screen">
+<div id="mainApp" class="hidden min-h-screen flex flex-col">
+  <div class="flex flex-1">
     <!-- Sidebar -->
     <aside class="w-64 gradient-bg text-white flex flex-col no-print">
       <div class="p-6 border-b border-white/20">
@@ -113,7 +121,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 flex flex-col overflow-hidden">
       <!-- Header -->
       <header class="bg-white shadow-sm border-b border-gray-200 px-8 py-4 no-print">
         <div class="flex items-center justify-between">
@@ -124,65 +132,99 @@
         </div>
       </header>
 
-      <div class="p-8">
+      <div class="flex-1 overflow-y-auto p-8">
         <!-- Dashboard -->
         <div id="module-dashboard" class="module-content fade-in">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card-hover bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-gray-500 mb-1">Total de Usuários</p>
-                  <p id="statUsuarios" class="text-3xl font-bold text-gray-800">0</p>
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="card-hover stat-gradient-1 rounded-2xl shadow-lg p-6 text-white">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 </div>
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <span class="text-white/70 text-xs font-medium">USUÁRIOS</span>
+              </div>
+              <p id="statUsuarios" class="text-4xl font-bold mb-1">0</p>
+              <p class="text-white/80 text-sm">Total cadastrados</p>
+            </div>
+            <div class="card-hover stat-gradient-2 rounded-2xl shadow-lg p-6 text-white">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                 </div>
+                <span class="text-white/70 text-xs font-medium">PRODUTOS</span>
+              </div>
+              <p id="statProdutos" class="text-4xl font-bold mb-1">0</p>
+              <p class="text-white/80 text-sm">Total cadastrados</p>
+            </div>
+            <div class="card-hover stat-gradient-3 rounded-2xl shadow-lg p-6 text-white">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <span class="text-white/70 text-xs font-medium">CLIENTES</span>
+              </div>
+              <p id="statClientes" class="text-4xl font-bold mb-1">0</p>
+              <p class="text-white/80 text-sm">Total cadastrados</p>
+            </div>
+            <div class="card-hover stat-gradient-4 rounded-2xl shadow-lg p-6 text-white">
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-white/70 text-xs font-medium">VALOR TOTAL</span>
+              </div>
+              <p id="statValor" class="text-3xl font-bold mb-1">R$ 0</p>
+              <p class="text-white/80 text-sm">Em produtos</p>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="w-2 h-6 bg-purple-500 rounded-full"></span>
+                Produtos por Tipo
+              </h3>
+              <div class="chart-container">
+                <canvas id="chartTipo"></canvas>
               </div>
             </div>
-            <div class="card-hover bg-white rounded-xl shadow-md p-6 border-l-4 border-indigo-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-gray-500 mb-1">Total de Produtos</p>
-                  <p id="statProdutos" class="text-3xl font-bold text-gray-800">0</p>
-                </div>
-                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                </div>
-              </div>
-            </div>
-            <div class="card-hover bg-white rounded-xl shadow-md p-6 border-l-4 border-pink-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-gray-500 mb-1">Total de Clientes</p>
-                  <p id="statClientes" class="text-3xl font-bold text-gray-800">0</p>
-                </div>
-                <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </div>
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="w-2 h-6 bg-pink-500 rounded-full"></span>
+                Top 5 Marcas
+              </h3>
+              <div class="chart-container">
+                <canvas id="chartMarca"></canvas>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-xl shadow-md p-8 text-center">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Bem-vindo ao Sistema de Cadastros</h3>
-            <p class="text-gray-600 mb-6">Selecione um módulo no menu lateral para começar.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button onclick="showModule('usuarios')" class="bg-purple-50 hover:bg-purple-100 text-purple-700 px-6 py-4 rounded-lg transition font-medium">
-                👥 Gerenciar Usuários
-              </button>
-              <button onclick="showModule('produtos')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-6 py-4 rounded-lg transition font-medium">
-                📦 Gerenciar Produtos
-              </button>
-              <button onclick="showModule('clientes')" class="bg-pink-50 hover:bg-pink-100 text-pink-700 px-6 py-4 rounded-lg transition font-medium">
-                🤝 Gerenciar Clientes
-              </button>
+          <!-- Bottom Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="w-2 h-6 bg-indigo-500 rounded-full"></span>
+                Valor por Categoria
+              </h3>
+              <div class="chart-container">
+                <canvas id="chartCategoria"></canvas>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6 lg:col-span-2">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="w-2 h-6 bg-green-500 rounded-full"></span>
+                Últimos Cadastros
+              </h3>
+              <div id="recentList" class="space-y-3 max-h-[280px] overflow-y-auto"></div>
             </div>
           </div>
         </div>
 
         <!-- Usuários Module -->
         <div id="module-usuarios" class="module-content hidden fade-in">
-          <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+          <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
             <div class="flex flex-wrap gap-3 items-center justify-between mb-4">
               <div class="flex gap-3 flex-1 min-w-[200px]">
                 <input type="text" id="searchUsuarios" placeholder="Buscar usuários..." 
@@ -191,7 +233,13 @@
               <div class="flex gap-2 flex-wrap">
                 <button onclick="openModal('usuario')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                  Novo Usuário
+                  Novo
+                </button>
+                <button onclick="printUsuarios()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                  ️ Imprimir
+                </button>
+                <button onclick="pdfUsuarios()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                  📄 PDF
                 </button>
                 <button onclick="openImportModal('usuarios')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
                   📥 Importar
@@ -223,7 +271,7 @@
 
         <!-- Produtos Module -->
         <div id="module-produtos" class="module-content hidden fade-in">
-          <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+          <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
             <div class="flex flex-wrap gap-3 items-center justify-between mb-4">
               <div class="flex gap-3 flex-1 min-w-[200px]">
                 <input type="text" id="searchProdutos" placeholder="Buscar produtos..." 
@@ -238,10 +286,13 @@
               <div class="flex gap-2 flex-wrap">
                 <button onclick="openModal('produto')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                  Novo Produto
+                  Novo
                 </button>
-                <button onclick="openPrintModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                <button onclick="openPrintModal('produtos')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
                   🖨️ Imprimir
+                </button>
+                <button onclick="openPdfModal('produtos')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                  📄 PDF
                 </button>
                 <button onclick="openImportModal('produtos')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
                   📥 Importar
@@ -276,7 +327,7 @@
 
         <!-- Clientes Module -->
         <div id="module-clientes" class="module-content hidden fade-in">
-          <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+          <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
             <div class="flex flex-wrap gap-3 items-center justify-between mb-4">
               <div class="flex gap-3 flex-1 min-w-[200px]">
                 <input type="text" id="searchClientes" placeholder="Buscar clientes..." 
@@ -285,7 +336,13 @@
               <div class="flex gap-2 flex-wrap">
                 <button onclick="openModal('cliente')" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                  Novo Cliente
+                  Novo
+                </button>
+                <button onclick="openPrintModal('clientes')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                  🖨️ Imprimir
+                </button>
+                <button onclick="openPdfModal('clientes')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                  📄 PDF
                 </button>
                 <button onclick="openImportModal('clientes')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
                   📥 Importar
@@ -294,7 +351,7 @@
                   📤 JSON
                 </button>
                 <button onclick="exportData('clientes', 'csv')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
-                  📤 CSV
+                   CSV
                 </button>
               </div>
             </div>
@@ -316,6 +373,22 @@
           </div>
         </div>
       </div>
+
+      <!-- FOOTER -->
+      <footer class="bg-white border-t border-gray-200 px-8 py-4 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600">
+          <div>
+            <p>© 2026 <b>Sistema de Cadastros</b> — Autor: <b>Walney Moreira Klein</b></p>
+            <p class="text-xs text-gray-500">walneyk@hotmail.com</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-500">🌐 Projeto:</span>
+            <a href="https://walneynf.github.io/cadastros/" target="_blank" class="footer-link">
+              https://walneynf.github.io/cadastros/
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   </div>
 </div>
@@ -458,11 +531,11 @@
   </div>
 </div>
 
-<!-- MODAL IMPRESSÃO -->
-<div id="modalPrint" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 p-4 no-print">
+<!-- MODAL PRINT/PDF -->
+<div id="modalPrintPdf" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 p-4 no-print">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md slide-in">
-    <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 rounded-t-2xl">
-      <h3 class="text-xl font-bold text-white">Imprimir Lista de Produtos</h3>
+    <div id="printPdfHeader" class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 rounded-t-2xl">
+      <h3 id="printPdfTitle" class="text-xl font-bold text-white">Imprimir / PDF</h3>
     </div>
     <div class="p-6">
       <label class="block text-sm font-medium text-gray-700 mb-2">Ordenar por:</label>
@@ -470,12 +543,14 @@
         <option value="codigo">Código (Alfabética)</option>
         <option value="marca">Marca (Alfabética)</option>
         <option value="tipo">Tipo (Alfabética)</option>
-        <option value="preco_asc">Preço (Menor para Maior)</option>
-        <option value="preco_desc">Preço (Maior para Menor)</option>
+        <option value="nome">Nome (Alfabética)</option>
+        <option value="preco_asc">Preço (Menor → Maior)</option>
+        <option value="preco_desc">Preço (Maior → Menor)</option>
       </select>
       <div class="flex gap-3">
-        <button onclick="closeModal('print')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg transition">Cancelar</button>
-        <button onclick="doPrint()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition">Imprimir</button>
+        <button onclick="closeModal('printPdf')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg transition">Cancelar</button>
+        <button onclick="doPrint()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">🖨️ Imprimir</button>
+        <button onclick="doPdf()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition">📄 Gerar PDF</button>
       </div>
     </div>
   </div>
@@ -484,13 +559,10 @@
 <!-- TOAST -->
 <div id="toastContainer" class="fixed top-4 right-4 z-[100] space-y-2 no-print"></div>
 
-<!-- PRINT AREA -->
-<div id="printArea" class="print-only p-8"></div>
-
 <script>
 // ================= DATA =================
-const STORAGE_KEY = 'sistema_cadastros_v1';
-const SESSION_KEY = 'sistema_session_v1';
+const STORAGE_KEY = 'sistema_cadastros_v2';
+const SESSION_KEY = 'sistema_session_v2';
 
 const SEED_CSV = `codigo,marca,tipo,categoria,preco_unitario,custo,obs
 MOLO000251,Logitech,Mouse,1,25.95,6.50,
@@ -791,6 +863,8 @@ CEMO000223,Motorola,Celular,3,229.00,55.00`;
 let data = { usuarios: [], produtos: [], clientes: [] };
 let currentUser = null;
 let importTarget = null;
+let printPdfTarget = null;
+let charts = {};
 
 function uid() { return 'id_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
 
@@ -846,7 +920,6 @@ function loadData() {
   if (stored) {
     try { data = JSON.parse(stored); return; } catch(e) {}
   }
-  // seed produtos
   const rows = parseCSV(SEED_CSV);
   data.produtos = rows.map(r => ({
     id: uid(),
@@ -858,12 +931,10 @@ function loadData() {
     custo: parseFloat(r.custo) || 0,
     obs: r.obs || ''
   }));
-  // seed usuarios demo
   data.usuarios = [
     { id: uid(), nome: 'Admin', email: 'admin@sistema.com', telefone: '(11) 99999-9999', cargo: 'Administrador', senha: 'admin123' },
     { id: uid(), nome: 'João Silva', email: 'joao@sistema.com', telefone: '(11) 98888-8888', cargo: 'Vendedor', senha: '123456' }
   ];
-  // seed clientes demo
   data.clientes = [
     { id: uid(), nome: 'Empresa ABC Ltda', cpf: '12.345.678/0001-90', email: 'contato@abc.com', telefone: '(11) 3333-3333', endereco: 'Rua A, 100 - São Paulo/SP' },
     { id: uid(), nome: 'Maria Souza', cpf: '123.456.789-00', email: 'maria@email.com', telefone: '(11) 97777-7777', endereco: 'Av. B, 200 - Rio de Janeiro/RJ' }
@@ -923,6 +994,7 @@ function showModule(name) {
   const titles = { dashboard: 'Dashboard', usuarios: 'Usuários', produtos: 'Produtos', clientes: 'Clientes' };
   document.getElementById('pageTitle').textContent = titles[name];
   if (name === 'produtos') populateFilters();
+  if (name === 'dashboard') updateCharts();
 }
 
 // ================= DASHBOARD =================
@@ -930,6 +1002,88 @@ function updateDashboard() {
   document.getElementById('statUsuarios').textContent = data.usuarios.length;
   document.getElementById('statProdutos').textContent = data.produtos.length;
   document.getElementById('statClientes').textContent = data.clientes.length;
+  const totalValor = data.produtos.reduce((s, p) => s + (p.preco_unitario || 0), 0);
+  document.getElementById('statValor').textContent = formatMoney(totalValor);
+  updateRecentList();
+}
+
+function updateRecentList() {
+  const all = [
+    ...data.usuarios.map(u => ({ tipo: 'Usuário', nome: u.nome, data: new Date() })),
+    ...data.produtos.map(p => ({ tipo: 'Produto', nome: `${p.codigo} - ${p.marca}`, data: new Date() })),
+    ...data.clientes.map(c => ({ tipo: 'Cliente', nome: c.nome, data: new Date() }))
+  ].sort((a,b) => b.data - a.data).slice(0, 8);
+
+  const icons = { Usuário: '👤', Produto: '📦', Cliente: '🤝' };
+  const colors = { Usuário: 'bg-purple-100 text-purple-700', Produto: 'bg-indigo-100 text-indigo-700', Cliente: 'bg-pink-100 text-pink-700' };
+
+  document.getElementById('recentList').innerHTML = all.length === 0 
+    ? '<p class="text-gray-500 text-center py-4">Nenhum cadastro recente</p>'
+    : all.map(item => `
+    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+      <div class="w-10 h-10 rounded-full ${colors[item.tipo]} flex items-center justify-center text-lg">${icons[item.tipo]}</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-gray-800 truncate">${item.nome}</p>
+        <p class="text-xs text-gray-500">${item.tipo}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateCharts() {
+  // Destroy existing
+  Object.values(charts).forEach(c => c?.destroy());
+  charts = {};
+
+  // Chart Tipo (Doughnut)
+  const tipoCount = {};
+  data.produtos.forEach(p => { tipoCount[p.tipo] = (tipoCount[p.tipo] || 0) + 1; });
+  const tipoLabels = Object.keys(tipoCount);
+  const tipoValues = Object.values(tipoCount);
+  const ctxTipo = document.getElementById('chartTipo');
+  if (ctxTipo && tipoLabels.length > 0) {
+    charts.tipo = new Chart(ctxTipo, {
+      type: 'doughnut',
+      data: {
+        labels: tipoLabels,
+        datasets: [{ data: tipoValues, backgroundColor: ['#667eea','#f093fb','#4facfe','#43e97b','#f6d365','#fda085','#a18cd1','#fbc2eb','#84fab0','#8fd3f4','#cfd9df','#e0c3fc'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } } }
+    });
+  }
+
+  // Chart Marca (Bar) - top 5
+  const marcaCount = {};
+  data.produtos.forEach(p => { marcaCount[p.marca] = (marcaCount[p.marca] || 0) + 1; });
+  const topMarcas = Object.entries(marcaCount).sort((a,b) => b[1]-a[1]).slice(0, 5);
+  const ctxMarca = document.getElementById('chartMarca');
+  if (ctxMarca && topMarcas.length > 0) {
+    charts.marca = new Chart(ctxMarca, {
+      type: 'bar',
+      data: {
+        labels: topMarcas.map(m => m[0]),
+        datasets: [{ label: 'Quantidade', data: topMarcas.map(m => m[1]), backgroundColor: '#667eea', borderRadius: 8 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+  }
+
+  // Chart Categoria (Pie) - valor total por categoria
+  const catValor = {};
+  data.produtos.forEach(p => { catValor[p.categoria] = (catValor[p.categoria] || 0) + (p.preco_unitario || 0); });
+  const catLabels = Object.keys(catValor);
+  const catValues = Object.values(catValor);
+  const ctxCat = document.getElementById('chartCategoria');
+  if (ctxCat && catLabels.length > 0) {
+    charts.categoria = new Chart(ctxCat, {
+      type: 'pie',
+      data: {
+        labels: catLabels,
+        datasets: [{ data: catValues, backgroundColor: ['#667eea','#f093fb','#4facfe','#43e97b','#f6d365','#fda085','#a18cd1','#fbc2eb','#84fab0','#8fd3f4'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } } }
+    });
+  }
 }
 
 // ================= RENDER =================
@@ -954,8 +1108,8 @@ function renderUsuarios() {
       <td class="px-4 py-3 text-gray-600">${u.telefone || '-'}</td>
       <td class="px-4 py-3"><span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">${u.cargo || '-'}</span></td>
       <td class="px-4 py-3 text-right">
-        <button onclick="editUsuario('${u.id}')" class="text-indigo-600 hover:text-indigo-800 mr-2">✏️</button>
-        <button onclick="deleteUsuario('${u.id}')" class="text-red-600 hover:text-red-800">🗑️</button>
+        <button onclick="editUsuario('${u.id}')" class="text-indigo-600 hover:text-indigo-800 mr-2">️</button>
+        <button onclick="deleteUsuario('${u.id}')" class="text-red-600 hover:text-red-800">️</button>
       </td>
     </tr>
   `).join('');
@@ -1034,14 +1188,17 @@ function openModal(type) {
 function closeModal(type) {
   document.getElementById('modal' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('hidden');
   document.getElementById('modal' + type.charAt(0).toUpperCase() + type.slice(1)).classList.remove('flex');
-  clearForm(type);
+  if (type !== 'printPdf' && type !== 'import') clearForm(type);
 }
 
 function clearForm(type) {
-  document.getElementById('form' + type.charAt(0).toUpperCase() + type.slice(1)).reset();
-  document.getElementById('editId' + type.charAt(0).toUpperCase() + type.slice(1)).value = '';
+  const form = document.getElementById('form' + type.charAt(0).toUpperCase() + type.slice(1));
+  if (form) form.reset();
+  const editId = document.getElementById('editId' + type.charAt(0).toUpperCase() + type.slice(1));
+  if (editId) editId.value = '';
   const titles = { usuario: 'Novo Usuário', produto: 'Novo Produto', cliente: 'Novo Cliente' };
-  document.getElementById('tituloModal' + type.charAt(0).toUpperCase() + type.slice(1)).textContent = titles[type];
+  const tituloEl = document.getElementById('tituloModal' + type.charAt(0).toUpperCase() + type.slice(1));
+  if (tituloEl) tituloEl.textContent = titles[type];
 }
 
 // ================= USUARIOS CRUD =================
@@ -1245,64 +1402,231 @@ function exportData(type, format) {
   toast(`${type.toUpperCase()} exportado em ${format.toUpperCase()}!`);
 }
 
-// ================= PRINT =================
-function openPrintModal() {
-  document.getElementById('modalPrint').classList.remove('hidden');
-  document.getElementById('modalPrint').classList.add('flex');
+// ================= PRINT / PDF =================
+function openPrintModal(target) {
+  printPdfTarget = target;
+  const titles = { produtos: 'Produtos', clientes: 'Clientes', usuarios: 'Usuários' };
+  document.getElementById('printPdfTitle').textContent = `Imprimir / PDF - ${titles[target]}`;
+  
+  // Ajustar opções de ordenação conforme o tipo
+  const orderSelect = document.getElementById('printOrder');
+  if (target === 'produtos') {
+    orderSelect.innerHTML = `
+      <option value="codigo">Código (Alfabética)</option>
+      <option value="marca">Marca (Alfabética)</option>
+      <option value="tipo">Tipo (Alfabética)</option>
+      <option value="preco_asc">Preço (Menor → Maior)</option>
+      <option value="preco_desc">Preço (Maior → Menor)</option>
+    `;
+  } else if (target === 'clientes') {
+    orderSelect.innerHTML = `
+      <option value="nome">Nome (Alfabética)</option>
+      <option value="cpf">CPF/CNPJ</option>
+    `;
+  } else {
+    orderSelect.innerHTML = `
+      <option value="nome">Nome (Alfabética)</option>
+      <option value="cargo">Cargo</option>
+    `;
+  }
+  
+  document.getElementById('modalPrintPdf').classList.remove('hidden');
+  document.getElementById('modalPrintPdf').classList.add('flex');
+}
+
+function getSortedList() {
+  const order = document.getElementById('printOrder').value;
+  let list;
+  if (printPdfTarget === 'produtos') {
+    list = [...data.produtos];
+    if (order === 'codigo') list.sort((a,b) => a.codigo.localeCompare(b.codigo));
+    else if (order === 'marca') list.sort((a,b) => a.marca.localeCompare(b.marca));
+    else if (order === 'tipo') list.sort((a,b) => a.tipo.localeCompare(b.tipo));
+    else if (order === 'preco_asc') list.sort((a,b) => a.preco_unitario - b.preco_unitario);
+    else if (order === 'preco_desc') list.sort((a,b) => b.preco_unitario - a.preco_unitario);
+  } else if (printPdfTarget === 'clientes') {
+    list = [...data.clientes];
+    if (order === 'nome') list.sort((a,b) => a.nome.localeCompare(b.nome));
+    else if (order === 'cpf') list.sort((a,b) => a.cpf.localeCompare(b.cpf));
+  } else {
+    list = [...data.usuarios];
+    if (order === 'nome') list.sort((a,b) => a.nome.localeCompare(b.nome));
+    else if (order === 'cargo') list.sort((a,b) => (a.cargo||'').localeCompare(b.cargo||''));
+  }
+  return list;
 }
 
 function doPrint() {
+  const list = getSortedList();
+  const titles = { produtos: 'Lista de Produtos', clientes: 'Lista de Clientes', usuarios: 'Lista de Usuários' };
   const order = document.getElementById('printOrder').value;
-  let list = [...data.produtos];
-  if (order === 'codigo') list.sort((a,b) => a.codigo.localeCompare(b.codigo));
-  else if (order === 'marca') list.sort((a,b) => a.marca.localeCompare(b.marca));
-  else if (order === 'tipo') list.sort((a,b) => a.tipo.localeCompare(b.tipo));
-  else if (order === 'preco_asc') list.sort((a,b) => a.preco_unitario - b.preco_unitario);
-  else if (order === 'preco_desc') list.sort((a,b) => b.preco_unitario - a.preco_unitario);
-
-  const printArea = document.getElementById('printArea');
-  printArea.innerHTML = `
-    <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;">
-      <h1 style="text-align: center; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Lista de Produtos</h1>
-      <p style="text-align: center; color: #666; margin: 10px 0 20px;">Ordenado por: ${order} | Total: ${list.length} produtos</p>
-      <p style="text-align: right; font-size: 12px; color: #999;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-        <thead>
-          <tr style="background: #667eea; color: white;">
-            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Código</th>
-            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Marca</th>
-            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Tipo</th>
-            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Categoria</th>
-            <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">Preço</th>
-            <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">Custo</th>
-            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">OBS</th>
+  
+  let tableHtml = '';
+  if (printPdfTarget === 'produtos') {
+    tableHtml = `
+      <thead>
+        <tr style="background: #667eea; color: white;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Código</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Marca</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Tipo</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Categoria</th>
+          <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">Preço</th>
+          <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">Custo</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">OBS</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((p, i) => `
+          <tr style="background: ${i % 2 === 0 ? '#f9f9f9' : 'white'};">
+            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace;">${p.codigo}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${p.marca}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${p.tipo}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${p.categoria}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatMoney(p.preco_unitario)}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatMoney(p.custo)}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${p.obs || '-'}</td>
           </tr>
-        </thead>
-        <tbody>
-          ${list.map((p, i) => `
-            <tr style="background: ${i % 2 === 0 ? '#f9f9f9' : 'white'};">
-              <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace;">${p.codigo}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${p.marca}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${p.tipo}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${p.categoria}</td>
-              <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatMoney(p.preco_unitario)}</td>
-              <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatMoney(p.custo)}</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${p.obs || '-'}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; font-size: 12px; color: #999;">
-        <p>Sistema de Cadastros - Autor: Walney Moreira Klein - walneyk@hotmail.com</p>
+        `).join('')}
+      </tbody>
+    `;
+  } else if (printPdfTarget === 'clientes') {
+    tableHtml = `
+      <thead>
+        <tr style="background: #ec4899; color: white;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Nome</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">CPF/CNPJ</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">E-mail</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Telefone</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Endereço</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((c, i) => `
+          <tr style="background: ${i % 2 === 0 ? '#f9f9f9' : 'white'};">
+            <td style="padding: 8px; border: 1px solid #ddd;">${c.nome}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${c.cpf}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${c.email}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${c.telefone}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${c.endereco || '-'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    `;
+  } else {
+    tableHtml = `
+      <thead>
+        <tr style="background: #8b5cf6; color: white;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Nome</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">E-mail</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Telefone</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Cargo</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((u, i) => `
+          <tr style="background: ${i % 2 === 0 ? '#f9f9f9' : 'white'};">
+            <td style="padding: 8px; border: 1px solid #ddd;">${u.nome}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${u.email}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${u.telefone || '-'}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${u.cargo || '-'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    `;
+  }
+
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${titles[printPdfTarget]}</title>
+      <style>
+        body { font-family: Arial, sans-serif; max-width: 1100px; margin: 20px auto; padding: 20px; }
+        h1 { text-align: center; color: #333; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+        .info { text-align: center; color: #666; margin: 10px 0; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; font-size: 12px; color: #999; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        @media print { body { margin: 0; } }
+      </style>
+    </head>
+    <body>
+      <h1>${titles[printPdfTarget]}</h1>
+      <p class="info">Ordenado por: <b>${order}</b> | Total: <b>${list.length}</b> registros</p>
+      <p class="info">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+      <table>${tableHtml}</table>
+      <div class="footer">
+        <p><b>Sistema de Cadastros</b> — Autor: Walney Moreira Klein — walneyk@hotmail.com</p>
+        <p>🌐 https://walneynf.github.io/cadastros/</p>
       </div>
-    </div>
-  `;
-  closeModal('print');
-  window.print();
+      <script>window.onload = function() { window.print(); }<\/script>
+    </body>
+    </html>
+  `);
+  win.document.close();
+  closeModal('printPdf');
+  toast('Janela de impressão aberta!');
+}
+
+function doPdf() {
+  const list = getSortedList();
+  const titles = { produtos: 'Lista de Produtos', clientes: 'Lista de Clientes', usuarios: 'Lista de Usuários' };
+  const order = document.getElementById('printOrder').value;
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('landscape', 'mm', 'a4');
+  
+  // Header
+  doc.setFontSize(18);
+  doc.setTextColor(102, 126, 234);
+  doc.text(titles[printPdfTarget], 14, 15);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`Ordenado por: ${order} | Total: ${list.length} registros`, 14, 22);
+  doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 28);
+  
+  // Table
+  let columns, rows;
+  if (printPdfTarget === 'produtos') {
+    columns = ['Código', 'Marca', 'Tipo', 'Categoria', 'Preço', 'Custo', 'OBS'];
+    rows = list.map(p => [p.codigo, p.marca, p.tipo, p.categoria, formatMoney(p.preco_unitario), formatMoney(p.custo), p.obs || '-']);
+  } else if (printPdfTarget === 'clientes') {
+    columns = ['Nome', 'CPF/CNPJ', 'E-mail', 'Telefone', 'Endereço'];
+    rows = list.map(c => [c.nome, c.cpf, c.email, c.telefone, c.endereco || '-']);
+  } else {
+    columns = ['Nome', 'E-mail', 'Telefone', 'Cargo'];
+    rows = list.map(u => [u.nome, u.email, u.telefone || '-', u.cargo || '-']);
+  }
+  
+  doc.autoTable({
+    head: [columns],
+    body: rows,
+    startY: 32,
+    styles: { fontSize: 9, cellPadding: 3 },
+    headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [245, 247, 250] },
+    margin: { left: 14, right: 14 }
+  });
+  
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text('Sistema de Cadastros - Walney Moreira Klein - walneyk@hotmail.com', 14, doc.internal.pageSize.height - 10);
+    doc.text('https://walneynf.github.io/cadastros/', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
+    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 10);
+  }
+  
+  doc.save(`${printPdfTarget}.pdf`);
+  closeModal('printPdf');
+  toast('PDF gerado com sucesso!');
 }
 
 // ================= CLOSE MODALS ON BACKDROP =================
-['usuario','produto','cliente','import','print'].forEach(type => {
+['usuario','produto','cliente','import','printPdf'].forEach(type => {
   const modal = document.getElementById('modal' + type.charAt(0).toUpperCase() + type.slice(1));
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(type); });
 });
