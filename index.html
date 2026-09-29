@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Sistema de Cadastros</title>
+<title>Sistema de Cadastros v0.0.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -29,6 +29,15 @@
   .stat-gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
   .footer-link { color: #667eea; text-decoration: none; font-weight: 500; }
   .footer-link:hover { text-decoration: underline; }
+  .version-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
   @media print {
     .no-print { display: none !important; }
     body { background: #fff; }
@@ -49,6 +58,7 @@
       </div>
       <h1 class="text-3xl font-bold text-gray-800 mb-2">Sistema de Cadastros</h1>
       <p class="text-gray-600">Faça seu login para acessar</p>
+      <span class="version-badge mt-3 inline-block bg-purple-100 text-purple-700">v0.0.3</span>
     </div>
     <form id="loginForm" class="space-y-4">
       <div>
@@ -72,6 +82,7 @@
     <div class="mt-6 pt-4 border-t border-gray-200 text-center text-xs text-gray-500">
       <p>Autor: <b>Walney Moreira Klein</b></p>
       <p>walneyk@hotmail.com</p>
+      <p class="mt-1">Versão: <b>v0.0.3</b></p>
     </div>
   </div>
 </div>
@@ -84,6 +95,7 @@
       <div class="p-6 border-b border-white/20">
         <h2 class="text-xl font-bold">Sistema de Cadastros</h2>
         <p class="text-sm text-white/70 mt-1">Painel Administrativo</p>
+        <span class="version-badge mt-2 inline-block">v0.0.3</span>
       </div>
       <nav class="flex-1 p-4 space-y-2">
         <button onclick="showModule('dashboard')" data-module="dashboard" class="sidebar-item active w-full text-left px-4 py-3 rounded-lg flex items-center gap-3">
@@ -135,7 +147,6 @@
       <div class="flex-1 overflow-y-auto p-8">
         <!-- Dashboard -->
         <div id="module-dashboard" class="module-content fade-in">
-          <!-- Stats Cards -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="card-hover stat-gradient-1 rounded-2xl shadow-lg p-6 text-white">
               <div class="flex items-center justify-between mb-4">
@@ -179,7 +190,6 @@
             </div>
           </div>
 
-          <!-- Charts Row -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div class="bg-white rounded-2xl shadow-md p-6">
               <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -201,7 +211,6 @@
             </div>
           </div>
 
-          <!-- Bottom Row -->
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white rounded-2xl shadow-md p-6">
               <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -235,10 +244,10 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   Novo
                 </button>
-                <button onclick="printUsuarios()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
-                  ️ Imprimir
+                <button onclick="openPrintPdfModal('usuarios')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                  🖨️ Imprimir
                 </button>
-                <button onclick="pdfUsuarios()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                <button onclick="openPrintPdfModal('usuarios')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
                   📄 PDF
                 </button>
                 <button onclick="openImportModal('usuarios')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
@@ -288,10 +297,10 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   Novo
                 </button>
-                <button onclick="openPrintModal('produtos')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                <button onclick="openPrintPdfModal('produtos')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
                   🖨️ Imprimir
                 </button>
-                <button onclick="openPdfModal('produtos')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                <button onclick="openPrintPdfModal('produtos')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
                   📄 PDF
                 </button>
                 <button onclick="openImportModal('produtos')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
@@ -301,7 +310,7 @@
                   📤 JSON
                 </button>
                 <button onclick="exportData('produtos', 'csv')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
-                   CSV
+                  📤 CSV
                 </button>
               </div>
             </div>
@@ -338,10 +347,10 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   Novo
                 </button>
-                <button onclick="openPrintModal('clientes')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
-                  🖨️ Imprimir
+                <button onclick="openPrintPdfModal('clientes')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                  ️ Imprimir
                 </button>
-                <button onclick="openPdfModal('clientes')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                <button onclick="openPrintPdfModal('clientes')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
                   📄 PDF
                 </button>
                 <button onclick="openImportModal('clientes')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
@@ -351,7 +360,7 @@
                   📤 JSON
                 </button>
                 <button onclick="exportData('clientes', 'csv')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
-                   CSV
+                  📤 CSV
                 </button>
               </div>
             </div>
@@ -378,7 +387,7 @@
       <footer class="bg-white border-t border-gray-200 px-8 py-4 no-print">
         <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600">
           <div>
-            <p>© 2026 <b>Sistema de Cadastros</b> — Autor: <b>Walney Moreira Klein</b></p>
+            <p>© 2026 <b>Sistema de Cadastros</b> — Autor: <b>Walney Moreira Klein</b> — <span class="version-badge bg-purple-100 text-purple-700">v0.0.3</span></p>
             <p class="text-xs text-gray-500">walneyk@hotmail.com</p>
           </div>
           <div class="flex items-center gap-2">
@@ -539,14 +548,7 @@
     </div>
     <div class="p-6">
       <label class="block text-sm font-medium text-gray-700 mb-2">Ordenar por:</label>
-      <select id="printOrder" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4">
-        <option value="codigo">Código (Alfabética)</option>
-        <option value="marca">Marca (Alfabética)</option>
-        <option value="tipo">Tipo (Alfabética)</option>
-        <option value="nome">Nome (Alfabética)</option>
-        <option value="preco_asc">Preço (Menor → Maior)</option>
-        <option value="preco_desc">Preço (Maior → Menor)</option>
-      </select>
+      <select id="printOrder" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4"></select>
       <div class="flex gap-3">
         <button onclick="closeModal('printPdf')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg transition">Cancelar</button>
         <button onclick="doPrint()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">🖨️ Imprimir</button>
@@ -561,8 +563,9 @@
 
 <script>
 // ================= DATA =================
-const STORAGE_KEY = 'sistema_cadastros_v2';
-const SESSION_KEY = 'sistema_session_v2';
+const STORAGE_KEY = 'sistema_cadastros_v3';
+const SESSION_KEY = 'sistema_session_v3';
+const APP_VERSION = 'v0.0.3';
 
 const SEED_CSV = `codigo,marca,tipo,categoria,preco_unitario,custo,obs
 MOLO000251,Logitech,Mouse,1,25.95,6.50,
@@ -1009,12 +1012,12 @@ function updateDashboard() {
 
 function updateRecentList() {
   const all = [
-    ...data.usuarios.map(u => ({ tipo: 'Usuário', nome: u.nome, data: new Date() })),
-    ...data.produtos.map(p => ({ tipo: 'Produto', nome: `${p.codigo} - ${p.marca}`, data: new Date() })),
-    ...data.clientes.map(c => ({ tipo: 'Cliente', nome: c.nome, data: new Date() }))
-  ].sort((a,b) => b.data - a.data).slice(0, 8);
+    ...data.usuarios.map(u => ({ tipo: 'Usuário', nome: u.nome })),
+    ...data.produtos.map(p => ({ tipo: 'Produto', nome: `${p.codigo} - ${p.marca}` })),
+    ...data.clientes.map(c => ({ tipo: 'Cliente', nome: c.nome }))
+  ].slice(-8).reverse();
 
-  const icons = { Usuário: '👤', Produto: '📦', Cliente: '🤝' };
+  const icons = { Usuário: '👤', Produto: '', Cliente: '🤝' };
   const colors = { Usuário: 'bg-purple-100 text-purple-700', Produto: 'bg-indigo-100 text-indigo-700', Cliente: 'bg-pink-100 text-pink-700' };
 
   document.getElementById('recentList').innerHTML = all.length === 0 
@@ -1031,11 +1034,9 @@ function updateRecentList() {
 }
 
 function updateCharts() {
-  // Destroy existing
   Object.values(charts).forEach(c => c?.destroy());
   charts = {};
 
-  // Chart Tipo (Doughnut)
   const tipoCount = {};
   data.produtos.forEach(p => { tipoCount[p.tipo] = (tipoCount[p.tipo] || 0) + 1; });
   const tipoLabels = Object.keys(tipoCount);
@@ -1052,7 +1053,6 @@ function updateCharts() {
     });
   }
 
-  // Chart Marca (Bar) - top 5
   const marcaCount = {};
   data.produtos.forEach(p => { marcaCount[p.marca] = (marcaCount[p.marca] || 0) + 1; });
   const topMarcas = Object.entries(marcaCount).sort((a,b) => b[1]-a[1]).slice(0, 5);
@@ -1068,7 +1068,6 @@ function updateCharts() {
     });
   }
 
-  // Chart Categoria (Pie) - valor total por categoria
   const catValor = {};
   data.produtos.forEach(p => { catValor[p.categoria] = (catValor[p.categoria] || 0) + (p.preco_unitario || 0); });
   const catLabels = Object.keys(catValor);
@@ -1108,8 +1107,8 @@ function renderUsuarios() {
       <td class="px-4 py-3 text-gray-600">${u.telefone || '-'}</td>
       <td class="px-4 py-3"><span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">${u.cargo || '-'}</span></td>
       <td class="px-4 py-3 text-right">
-        <button onclick="editUsuario('${u.id}')" class="text-indigo-600 hover:text-indigo-800 mr-2">️</button>
-        <button onclick="deleteUsuario('${u.id}')" class="text-red-600 hover:text-red-800">️</button>
+        <button onclick="editUsuario('${u.id}')" class="text-indigo-600 hover:text-indigo-800 mr-2">✏️</button>
+        <button onclick="deleteUsuario('${u.id}')" class="text-red-600 hover:text-red-800">🗑️</button>
       </td>
     </tr>
   `).join('');
@@ -1402,13 +1401,12 @@ function exportData(type, format) {
   toast(`${type.toUpperCase()} exportado em ${format.toUpperCase()}!`);
 }
 
-// ================= PRINT / PDF =================
-function openPrintModal(target) {
+// ================= PRINT / PDF (UNIFICADO) =================
+function openPrintPdfModal(target) {
   printPdfTarget = target;
   const titles = { produtos: 'Produtos', clientes: 'Clientes', usuarios: 'Usuários' };
   document.getElementById('printPdfTitle').textContent = `Imprimir / PDF - ${titles[target]}`;
   
-  // Ajustar opções de ordenação conforme o tipo
   const orderSelect = document.getElementById('printOrder');
   if (target === 'produtos') {
     orderSelect.innerHTML = `
@@ -1557,9 +1555,9 @@ function doPrint() {
       <table>${tableHtml}</table>
       <div class="footer">
         <p><b>Sistema de Cadastros</b> — Autor: Walney Moreira Klein — walneyk@hotmail.com</p>
-        <p>🌐 https://walneynf.github.io/cadastros/</p>
+        <p> https://walneynf.github.io/cadastros/ — Versão: v0.0.3</p>
       </div>
-      <script>window.onload = function() { window.print(); }<\/script>
+      <script>window.onload = function() { setTimeout(function(){ window.print(); }, 300); }<\/script>
     </body>
     </html>
   `);
@@ -1569,60 +1567,78 @@ function doPrint() {
 }
 
 function doPdf() {
-  const list = getSortedList();
-  const titles = { produtos: 'Lista de Produtos', clientes: 'Lista de Clientes', usuarios: 'Lista de Usuários' };
-  const order = document.getElementById('printOrder').value;
-  
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('landscape', 'mm', 'a4');
-  
-  // Header
-  doc.setFontSize(18);
-  doc.setTextColor(102, 126, 234);
-  doc.text(titles[printPdfTarget], 14, 15);
-  
-  doc.setFontSize(10);
-  doc.setTextColor(100);
-  doc.text(`Ordenado por: ${order} | Total: ${list.length} registros`, 14, 22);
-  doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 28);
-  
-  // Table
-  let columns, rows;
-  if (printPdfTarget === 'produtos') {
-    columns = ['Código', 'Marca', 'Tipo', 'Categoria', 'Preço', 'Custo', 'OBS'];
-    rows = list.map(p => [p.codigo, p.marca, p.tipo, p.categoria, formatMoney(p.preco_unitario), formatMoney(p.custo), p.obs || '-']);
-  } else if (printPdfTarget === 'clientes') {
-    columns = ['Nome', 'CPF/CNPJ', 'E-mail', 'Telefone', 'Endereço'];
-    rows = list.map(c => [c.nome, c.cpf, c.email, c.telefone, c.endereco || '-']);
-  } else {
-    columns = ['Nome', 'E-mail', 'Telefone', 'Cargo'];
-    rows = list.map(u => [u.nome, u.email, u.telefone || '-', u.cargo || '-']);
+  try {
+    const list = getSortedList();
+    const titles = { produtos: 'Lista de Produtos', clientes: 'Lista de Clientes', usuarios: 'Lista de Usuários' };
+    const order = document.getElementById('printOrder').value;
+    
+    // Verificar se jsPDF está carregado
+    if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+      toast('Erro: jsPDF não carregado. Verifique sua conexão.', 'error');
+      return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setTextColor(102, 126, 234);
+    doc.text(titles[printPdfTarget], 14, 15);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Ordenado por: ${order} | Total: ${list.length} registros`, 14, 22);
+    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 28);
+    
+    // Table
+    let columns, rows;
+    if (printPdfTarget === 'produtos') {
+      columns = ['Código', 'Marca', 'Tipo', 'Categoria', 'Preço', 'Custo', 'OBS'];
+      rows = list.map(p => [p.codigo, p.marca, p.tipo, p.categoria, formatMoney(p.preco_unitario), formatMoney(p.custo), p.obs || '-']);
+    } else if (printPdfTarget === 'clientes') {
+      columns = ['Nome', 'CPF/CNPJ', 'E-mail', 'Telefone', 'Endereço'];
+      rows = list.map(c => [c.nome, c.cpf, c.email, c.telefone, c.endereco || '-']);
+    } else {
+      columns = ['Nome', 'E-mail', 'Telefone', 'Cargo'];
+      rows = list.map(u => [u.nome, u.email, u.telefone || '-', u.cargo || '-']);
+    }
+    
+    // Verificar se autoTable está disponível
+    if (typeof doc.autoTable !== 'function') {
+      toast('Erro: plugin autoTable não carregado.', 'error');
+      return;
+    }
+    
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+      startY: 32,
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+      margin: { left: 14, right: 14 }
+    });
+    
+    // Footer em todas as páginas
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text('Sistema de Cadastros - Walney Moreira Klein - walneyk@hotmail.com', 14, doc.internal.pageSize.height - 10);
+      doc.text('https://walneynf.github.io/cadastros/', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
+      doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 10);
+      doc.text('Versão: v0.0.3', 14, doc.internal.pageSize.height - 5);
+    }
+    
+    doc.save(`${printPdfTarget}.pdf`);
+    closeModal('printPdf');
+    toast('PDF gerado com sucesso!');
+  } catch (err) {
+    console.error('Erro ao gerar PDF:', err);
+    toast('Erro ao gerar PDF: ' + err.message, 'error');
   }
-  
-  doc.autoTable({
-    head: [columns],
-    body: rows,
-    startY: 32,
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [245, 247, 250] },
-    margin: { left: 14, right: 14 }
-  });
-  
-  // Footer
-  const pageCount = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text('Sistema de Cadastros - Walney Moreira Klein - walneyk@hotmail.com', 14, doc.internal.pageSize.height - 10);
-    doc.text('https://walneynf.github.io/cadastros/', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
-    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 10);
-  }
-  
-  doc.save(`${printPdfTarget}.pdf`);
-  closeModal('printPdf');
-  toast('PDF gerado com sucesso!');
 }
 
 // ================= CLOSE MODALS ON BACKDROP =================
